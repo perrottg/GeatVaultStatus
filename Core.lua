@@ -8,17 +8,9 @@ GreatVaultStatus.data = nil
 textures.GreatVaultStatus = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1.png"
 textures.alliance = "|TInterface\\FriendsFrame\\PlusManz-Alliance:18|t"
 textures.horde = "|TInterface\\FriendsFrame\\PlusManz-Horde:18|t"
-textures.bossDefeated = "|TInterface\\WorldMap\\Skull_64Red:18|t"
-textures.bossStatus = "|TInterface\\WorldMap\\Skull_64Red:18|t"
-textures.bossAvailable = "|TInterface\\WorldMap\\Skull_64Grey:18|t"
-textures.bossInactive = "|TInterface\\WorldMap\\Skull_64Grey:18|t"
-textures.quest = "|TInterface\\Minimap\\OBJECTICONS:20:20:0:0:256:192:32:64:20:48|t"
-textures.toy = "|TInterface\\Icons\\INV_Misc_Toy_03:18|t"
-textures.mount = "|TInterface\\Icons\\Ability_mount_ridinghorse:18|t"
-textures.pet = "|TInterface\\Icons\\INV_Box_PetCarrier_01:18|t"
 textures.gear = "|TInterface\\WorldMap\\Gear_64Grey:18|t"
 textures.tick = "|TInterface\\RAIDFRAME\\ReadyCheck-Ready:16|t"
-textures.bonusRoll = "|TInterface\\BUTTONS\\UI-GroupLoot-Dice-Up:16:16|t"
+
 
 local addonName = "GreatVaultStatus"
 local LDB = LibStub("LibDataBroker-1.1", true)
@@ -207,8 +199,6 @@ function SortCharacters(a, b)
 end
 
 local function ShowActivities(tooltip, line, columnStart, activities, lastUpdated, leftPadding, rightPadding)
-	GreatVaultStatus:Print("Showing activities...")
-
 	local status
 	local column = columnStart
 	local activityThisWeek = lastUpdated > GetWeeklyQuestResetTime() - 604800
@@ -259,8 +249,6 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 
 		column = column + 1
 	end
-
-	GreatVaultStatus:Print("Finihsed showing activities")
 end
 
 local function HasCompletedActivities(status)
@@ -284,8 +272,6 @@ end
 
 
 local function ShowCharacter(tooltip, name, info)
-	GreatVaultStatus:Print("Showing character "..name)
-
 	if not info then
 		return
 	end
@@ -327,29 +313,19 @@ local function ShowCharacter(tooltip, name, info)
 	if name == GetUnitName("Player") then
 		tooltip:SetLineColor(line, yellow.r, yellow.g, yellow.b, 0.2)
 	end
-
-	
-	GreatVaultStatus:Print("Finished showing character "..name)
 	
 	return line
 end
 
 local function ShowHeader(tooltip, marker, headerName)
-	GreatVaultStatus:Print("Shsowing header "..headerName.."...")
-
 	line = tooltip:AddHeader()
 
 	if (marker) then
 		tooltip:SetCell(line, 1, marker)
 	end
 
-
-
 	tooltip:SetCell(line, 2, headerName, nil, nil, nil, nil, nil, 50)
 	tooltip:SetCellTextColor(line, 2, yellow.r, yellow.g, yellow.b)
-
-	--tooltip:SetCell(line, 2, L["Character"], nil, "LEFT")
-	--tooltip:SetCellTextColor(line, 2, yellow.r, yellow.g, yellow.b)
 
 	tooltip:SetCell(line, COL_ITEMLEVEL, L["iLevel"], nil, "RIGHT")
 	tooltip:SetCellTextColor(line, COL_ITEMLEVEL, yellow.r, yellow.g, yellow.b)
@@ -366,45 +342,25 @@ local function ShowHeader(tooltip, marker, headerName)
 	tooltip:SetCellScript(line, COL_MYHTICS, "OnMouseUp", HeaderOnClick, COL_MYHTICS)
 	tooltip:SetCellScript(line, COL_PVP, "OnMouseUp", HeaderOnClick, COL_PVP)
 
-
-	GreatVaultStatus:Print("Finihsed shsowing header "..headerName)
-
 	return line
 end
 
 
 function GreatVaultStatus:ShowToolTip()
-	self:Print("Showing tootip....")
 	local tooltip = GreatVaultStatus.tooltip	
-	--local characters = self:GetCharacters()
 
 	if LibQTip:IsAcquired("GreatVaultStatusTooltip") and tooltip then
 		tooltip:Clear()
-		self:Print("tooltip already aquied")
 	else
 		tooltip = LibQTip:Acquire("GreatVaultStatusTooltip", 13)
 		GreatVaultStatus.tooltip = tooltip
-		self:Print("aquiring tooltip")
 	end
 
 	local line = tooltip:AddHeader(" ")
 
 	tooltip:SetCell(line, 1, "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1:16|t "..L["Great Vault Status"], nil, "LEFT", 12)
 	tooltip:AddSeparator(6,0,0,0,0)
-	self:Print("formating section 1")
-
-
-	--line = ShowHeader(tooltip, nil, L["Character"])
-
-
-	--line = tooltip:AddHeader()
-	self:Print("formating section 2")
-
-
-	--tooltip:SetLineTextColor(line, yellow.r, yellow.g, yellow.b)
-	self:Print("formating section 3")
-
-	tooltip:AddSeparator(6,0,0,0,0)
+--	tooltip:AddSeparator(6,0,0,0,0)
 
 	local realmName = GetRealmName()
 	local realmInfo = self:GetRealmInfo(realmName)
@@ -415,25 +371,18 @@ function GreatVaultStatus:ShowToolTip()
 		table.insert(characters, value);
 	end
 	
-
-	self:Print("formating section 4")
 	if realmInfo then
 		collapsed = realmInfo.collapsed
-
-		--table.sort(characters, function(a,b) return a.name < b.name end)
 		table.sort(characters, SortCharacters)
 
 		if not collapsed then
 			line = ShowHeader(tooltip, "|TInterface\\Buttons\\UI-MinusButton-Up:16|t", realmName)
-	
 			tooltip:AddSeparator(3,0,0,0,0)
 			
 			for characterName, characterInfo in pairs(characters) do
 				ShowCharacter(tooltip, characterInfo.name, characterInfo)
 			end
 
-	
-			--tooltip:AddSeparator(1, 1, 1, 1, 1.0)
 			tooltip:AddSeparator(6,0,0,0,0)
 		else
 			line = ShowHeader(tooltip, "|TInterface\\Buttons\\UI-PlusButton-Up:16|t", realmName)
@@ -443,9 +392,6 @@ function GreatVaultStatus:ShowToolTip()
 
 	end
 	
-
-	self:Print("tooltip setup finished")
-
 	if (frame) then
 		tooltip:SetAutoHideDelay(0.01, frame)
 		tooltip:SmartAnchorTo(frame)
