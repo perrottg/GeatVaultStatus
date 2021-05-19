@@ -8,7 +8,5 @@
 embeds.xml
 
 enUS.lua
-
 Core.lua
-Options.lua
 

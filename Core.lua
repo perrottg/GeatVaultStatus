@@ -53,6 +53,7 @@ local SORT_DEC = 2
 
 local sortColumn = COL_CHARACTER
 local sortAscending = true 
+local showSingleRealm = true
 
 
 local defaults = {
@@ -94,6 +95,41 @@ local defaults = {
 	},
 }
 
+local function GetTableSize(T)
+	local count = 0
+
+	if T then
+		for _ in pairs(T) do
+			count = count +1
+		end
+	end
+
+	return count
+end
+
+local function RealmOnClick(cell, realmName)
+	--GreatVaultStatus:Print("Realm click!")
+	GreatVaultStatus.db.global.realms[realmName].collapsed = not GreatVaultStatus.db.global.realms[realmName].collapsed
+	GreatVaultStatus:ShowToolTip()
+end
+
+local function HeaderOnClick(cell, column)
+	if column == sortColumn then
+		sortAscending = not sortAscending
+	else
+		sortColumn = column
+	end
+
+	GreatVaultStatus.db.global.sortColumn = sortColumn
+	if sortAscending then
+		GreatVaultStatus.db.global.sortOrder = "Ascending"
+	else
+		GreatVaultStatus.db.global.sortOrder = "Descending"
+	end
+
+	GreatVaultStatus:ShowToolTip()
+end
+
 local GreatVaultStatusLauncher = LDB:NewDataObject(addonName, {
 		type = "data source",
 		text = L["Great Vault Status"],
@@ -102,7 +138,7 @@ local GreatVaultStatusLauncher = LDB:NewDataObject(addonName, {
 			--"launcher",
 		icon = textures.GreatVaultStatus,
 		OnClick = function(clickedframe, button)
-			GreatVaultStatus:ShowOptions()
+			--GreatVaultStatus:ShowOptions()
 		end,
 		OnEnter = function(self)
 			frame = self
@@ -135,6 +171,16 @@ function GreatVaultStatus:OnInitialize()
 
 	sortColumn = self.db.global.sortColumn or COL_CHARACTER
 	sortAscending = not self.db.global.sortOrder or self.db.global.sortOrder == "Ascending"
+	showSingleRealm = GetTableSize(self.db.global.realms) <= 1
+
+	if showSingleRealm then
+		COL_CHARACTER = 1
+		COL_ITEMLEVEL = 2
+		COL_REWARDS = 3
+		COL_RAIDS = 4
+		COL_MYHTICS = 7
+		COL_PVP = 10
+	end
 
 	LDBIcon:Register(addonName, GreatVaultStatusLauncher, self.db.global.MinimapButton)
 
@@ -212,8 +258,7 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 		local leftPad = 3
 		local rightPad = 3
 		local difficulty
-		--if activity.progress == 0 then
-		--	status = GRAY_FONT_COLOR_CODE .. "-" .. FONT_COLOR_CODE_CLOSE
+
 		if activity.progress >= activity.threshold and activityThisWeek then
 
 			if activity.type == Enum.WeeklyRewardChestThresholdType.MythicPlus then
@@ -223,11 +268,6 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 			elseif activity.type == Enum.WeeklyRewardChestThresholdType.Raid then
 				difficulty = DifficultyUtil.GetDifficultyName(activity.level)
 			end
-			--local link = C_WeeklyRewards.GetExampleRewardItemHyperlinks(activity.id)
-			--local level = GetDetailedItemLevelInfo(link);
-			--local difficulty = DifficultyUtil.GetDifficultyName(activity.level)
-			--txt = txt ..  prefix .. GREEN_FONT_COLOR_CODE .. level .. FONT_COLOR_CODE_CLOSE
-			--txt = txt .. prefix .. GRAY_FONT_COLOR .. "?" .. FONT_COLOR_CODE_CLOSE
 
 			status = GREEN_FONT_COLOR_CODE .. difficulty .. FONT_COLOR_CODE_CLOSE
 
@@ -313,9 +353,7 @@ local function ShowCharacter(tooltip, name, info)
 		tooltip:SetCellTextColor(line, COL_CHARACTER, color.r, color.g, color.b)
 	end
 
-	if name == GetUnitName("Player") then
-		tooltip:SetLineColor(line, yellow.r, yellow.g, yellow.b, 0.2)
-	end
+	
 	
 	return line
 end
@@ -323,13 +361,8 @@ end
 local function ShowHeader(tooltip, marker, headerName)
 	line = tooltip:AddHeader()
 
-	if (marker) then
-		tooltip:SetCell(line, 1, marker)
-	end
-
-	tooltip:SetCell(line, 2, headerName, nil, nil, nil, nil, nil, 50)
-	tooltip:SetCellTextColor(line, 2, yellow.r, yellow.g, yellow.b)
-
+	tooltip:SetCell(line, COL_CHARACTER, L["Chaacter"], nil, "LEFT", nil, nil, nil, 50)
+	tooltip:SetCellTextColor(line, COL_CHARACTER, yellow.r, yellow.g, yellow.b)
 	tooltip:SetCell(line, COL_ITEMLEVEL, L["iLevel"], nil, "RIGHT")
 	tooltip:SetCellTextColor(line, COL_ITEMLEVEL, yellow.r, yellow.g, yellow.b)
 	tooltip:SetCell(line, COL_RAIDS, L["Raids"], nil, "CENTER", 3)
@@ -341,61 +374,80 @@ local function ShowHeader(tooltip, marker, headerName)
 
 	tooltip:SetCellScript(line, COL_CHARACTER, "OnMouseUp", HeaderOnClick, COL_CHARACTER)
 	tooltip:SetCellScript(line, COL_ITEMLEVEL, "OnMouseUp", HeaderOnClick, COL_ITEMLEVEL)
-	tooltip:SetCellScript(line, COL_RAIDS, "OnMouseUp", HeaderOnClick, COL_RAIDS)
-	tooltip:SetCellScript(line, COL_MYHTICS, "OnMouseUp", HeaderOnClick, COL_MYHTICS)
-	tooltip:SetCellScript(line, COL_PVP, "OnMouseUp", HeaderOnClick, COL_PVP)
+	--tooltip:SetCellScript(line, COL_RAIDS, "OnMouseUp", HeaderOnClick, COL_RAIDS)
+	--tooltip:SetCellScript(line, COL_MYHTICS, "OnMouseUp", HeaderOnClick, COL_MYHTICS)
+	--tooltip:SetCellScript(line, COL_PVP, "OnMouseUp", HeaderOnClick, COL_PVP)
 
 	return line
 end
 
 
+
+local function ShowRealm(tooltip, name, info)
+	local collapsed = info.collapsed
+	local characters = {}
+	local line = tooltip:AddHeader()
+	local button = "|TInterface\\Buttons\\UI-MinusButton-Up:16|t"
+
+	if collapsed then
+		button = "|TInterface\\Buttons\\UI-PlusButton-Up:16|t"
+	end
+
+	if not showSingleRealm then
+		tooltip:SetCell(line, 1, button)
+		tooltip:SetCellScript(line, 1, "OnMouseUp", RealmOnClick, name)
+
+		tooltip:SetCell(line, 2, name, nil, nil, nil, nil, nil, 50)
+		tooltip:SetCellTextColor(line, 2, yellow.r, yellow.g, yellow.b)
+	end
+
+	if not collapsed or showSingleRealm then	
+		for key, value in pairs(info.characters) do
+			table.insert(characters, value);
+		end
+	
+		table.sort(characters, SortCharacters)
+
+		for characterName, characterInfo in pairs(characters) do
+			line = ShowCharacter(tooltip, characterInfo.name, characterInfo)
+
+			if name == GetRealmName() and characterInfo.name == GetUnitName("Player") then
+				tooltip:SetLineColor(line, yellow.r, yellow.g, yellow.b, 0.2)
+			end
+
+		end
+
+		tooltip:AddSeparator(6,0,0,0,0)
+	end
+end
+
 function GreatVaultStatus:ShowToolTip()
-	local tooltip = GreatVaultStatus.tooltip	
+	local tooltip = GreatVaultStatus.tooltip
+	local columns = 13	
+
+	if showSingleRealm then
+		columns = 12
+	end
 
 	if LibQTip:IsAcquired("GreatVaultStatusTooltip") and tooltip then
 		tooltip:Clear()
 	else
-		tooltip = LibQTip:Acquire("GreatVaultStatusTooltip", 13)
+		tooltip = LibQTip:Acquire("GreatVaultStatusTooltip", columns)
 		GreatVaultStatus.tooltip = tooltip
 	end
 
 	local line = tooltip:AddHeader(" ")
 
-	--tooltip:SetCell(line, 1, "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1:16|t "..L["Great Vault Status"], nil, "LEFT", 12)
-	tooltip:SetCell(line, 1, "|T"..textures.GreatVaultStatus..":18|t "..L["Great Vault Status"], nil, "LEFT", 13)
+	tooltip:SetCell(line, 1, "|T"..textures.GreatVaultStatus..":18|t "..L["Great Vault Status"], nil, "LEFT", columns)
 	tooltip:AddSeparator(6,0,0,0,0)
---	tooltip:AddSeparator(6,0,0,0,0)
 
-	local realmName = GetRealmName()
-	local realmInfo = self:GetRealmInfo(realmName)
-	local characters = {}
-	local collapsed = false
+	ShowHeader(tooltip, nil, nil)
 
-	for key, value in pairs(realmInfo.characters) do
-		table.insert(characters, value);
+	for key, value in pairs(self.db.global.realms or {}) do
+		tooltip:AddSeparator(3,0,0,0,0)
+		ShowRealm(tooltip, key, value)
 	end
-	
-	if realmInfo then
-		collapsed = realmInfo.collapsed
-		table.sort(characters, SortCharacters)
 
-		if not collapsed then
-			line = ShowHeader(tooltip, "|TInterface\\Buttons\\UI-MinusButton-Up:16|t", realmName)
-			tooltip:AddSeparator(3,0,0,0,0)
-			
-			for characterName, characterInfo in pairs(characters) do
-				ShowCharacter(tooltip, characterInfo.name, characterInfo)
-			end
-
-			tooltip:AddSeparator(6,0,0,0,0)
-		else
-			line = ShowHeader(tooltip, "|TInterface\\Buttons\\UI-PlusButton-Up:16|t", realmName)
-		end
-
-		tooltip:SetCellScript(line, 1, "OnMouseUp", RealmOnClick, realmName)
-
-	end
-	
 	if (frame) then
 		tooltip:SetAutoHideDelay(0.01, frame)
 		tooltip:SmartAnchorTo(frame)
@@ -404,30 +456,6 @@ function GreatVaultStatus:ShowToolTip()
 	tooltip:UpdateScrolling()
 	tooltip:Show()
 end
-
-function RealmOnClick(cell, realmName)
-	GreatVaultStatus.db.global.realms[realmName].collapsed = not GreatVaultStatus.db.global.realms[realmName].collapsed
-	GreatVaultStatus:ShowToolTip()
-end
-
-function HeaderOnClick(cell, column)
-	if column == sortColumn then
-		sortAscending = not sortAscending
-	else
-		sortColumn = column
-		--sortAscending = true
-	end
-
-	GreatVaultStatus.db.global.sortColumn = sortColumn
-	if sortAscending then
-		GreatVaultStatus.db.global.sortOrder = "Ascending"
-	else
-		GreatVaultStatus.db.global.sortOrder = "Descending"
-	end
-
-	GreatVaultStatus:ShowToolTip()
-end
-
 
 function GreatVaultStatus:GetRealmInfo(realmName)
 	if not self.db.global.realms then
@@ -461,7 +489,6 @@ local function UpdateStatusForCharacter(currentStatus)
     status.activities[Enum.WeeklyRewardChestThresholdType.MythicPlus] = GetActivities(Enum.WeeklyRewardChestThresholdType.MythicPlus)
     status.activities[Enum.WeeklyRewardChestThresholdType.RankedPvP] = GetActivities(Enum.WeeklyRewardChestThresholdType.RankedPvP)
     status.activities[Enum.WeeklyRewardChestThresholdType.Raid] = GetActivities(Enum.WeeklyRewardChestThresholdType.Raid)
-
 	status.hasAvailableRewards = C_WeeklyRewards.HasAvailableRewards()
 
 	return status
@@ -473,18 +500,12 @@ function GreatVaultStatus:SaveCharacterInfo(info)
 	end
 
 	local characterInfo = info or self:GetCharacterInfo()
-
-	self:Print("Saving character info...")
-
 	local characterName = UnitName("player")
 	local realmName = GetRealmName()
 	local realmInfo = self:GetRealmInfo(realmName)
 
 	realmInfo.characters[characterName]  = characterInfo
 	self.db.global.realms[realmName] = realmInfo
-
-	self:Print("Finished saving.")
-
 end
 
 function GreatVaultStatus:GetCharacterInfo()
@@ -508,51 +529,34 @@ local function UpdateStatus()
 	GreatVaultStatus:SaveCharacterInfo()
 end
 
-
-function GreatVaultStatus:PLAYER_LOGOUT(event)
-	self:Print(event)
-
-	self.db.global.sortColumn = sortColumn
-	if sortAscending then
-		self.db.global.sortOrder = "Ascending"
-	else
-		self.db.global.sortOrder = "Descending"
-	end
-end
-
 function GreatVaultStatus:PLAYER_ENTERING_WORLD(event, isLogin, isReload)
-	self:Print(event)
 	if isLogin or isReload then
 		self:ScheduleTimer(UpdateStatus, 10)
 	end
 end
 
 function GreatVaultStatus:WEEKLY_REWARDS_UPDATE(event)
-	self:Print(event)
-
 	self:SaveCharacterInfo()
 end
 
 function GreatVaultStatus:WEEKLY_REWARDS_ITEM_CHANGED(event)
-	self:Print(event)
-
 	self:SaveCharacterInfo()
 end
 
+function GreatVaultStatus:WEEKLY_REWARDS_HIDE(event)
+	self:SaveCharacterInfo()
+end
 
 function GreatVaultStatus:OnEnable()
-	self:RegisterEvent("PLAYER_LOGOUT")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-
 	self:RegisterEvent("WEEKLY_REWARDS_UPDATE")
 	self:RegisterEvent("WEEKLY_REWARDS_ITEM_CHANGED")
-
-	self:GetSinkAce3OptionsDataTable()
+	self:RegisterEvent("WEEKLY_REWARDS_HIDE")
 end
 
 function GreatVaultStatus:OnDisable()
-	self:UnregisterEvent("PLAYER_LOGOUT")
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	self:UnregisterEvent("WEEKLY_REWARDS_UPDATE")
 	self:UnregisterEvent("WEEKLY_REWARDS_ITEM_CHANGED")
+	self:UnregisterEvent("WEEKLY_REWARDS_HIDE")
 end
