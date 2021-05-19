@@ -5,11 +5,14 @@ GreatVaultStatus = LibStub("AceAddon-3.0"):NewAddon("GreatVaultStatus", "AceCons
 local textures = {}
 GreatVaultStatus.data = nil
 
-textures.GreatVaultStatus = "Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1.png"
+textures.GreatVaultStatus = "Interface\\Addons\\GreatVaultStatus\\media\\icon.blp" --"Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1.png"
 textures.alliance = "|TInterface\\FriendsFrame\\PlusManz-Alliance:18|t"
 textures.horde = "|TInterface\\FriendsFrame\\PlusManz-Horde:18|t"
-textures.gear = "|TInterface\\WorldMap\\Gear_64Grey:18|t"
+--textures.gear = "|TInterface\\WorldMap\\Gear_64Grey:18|t"
 textures.tick = "|TInterface\\RAIDFRAME\\ReadyCheck-Ready:16|t"
+textures.reward = "|TInterface\\WorldMap\\Gear_64Grey:16|t"
+--Interface/Challenges/ChallengeModeTab
+--textures.reward = "|TInterface\\Addons\\GreatVault\\media\\icon.blp:16|t"
 
 
 local addonName = "GreatVaultStatus"
@@ -302,7 +305,7 @@ local function ShowCharacter(tooltip, name, info)
 	end
 
 	if HasCompletedActivities(info.status) then
-		tooltip:SetCell(line, COL_REWARDS, textures.gear)
+		tooltip:SetCell(line, COL_REWARDS, textures.reward)
 	end
 
 	if info.class then
@@ -358,7 +361,8 @@ function GreatVaultStatus:ShowToolTip()
 
 	local line = tooltip:AddHeader(" ")
 
-	tooltip:SetCell(line, 1, "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1:16|t "..L["Great Vault Status"], nil, "LEFT", 12)
+	--tooltip:SetCell(line, 1, "|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1:16|t "..L["Great Vault Status"], nil, "LEFT", 12)
+	tooltip:SetCell(line, 1, "|T"..textures.GreatVaultStatus..":18|t "..L["Great Vault Status"], nil, "LEFT", 13)
 	tooltip:AddSeparator(6,0,0,0,0)
 --	tooltip:AddSeparator(6,0,0,0,0)
 
