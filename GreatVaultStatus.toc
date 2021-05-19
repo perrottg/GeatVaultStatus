@@ -1,0 +1,14 @@
+## Interface: 90005
+## Title: Great Vault Status
+## Version: @project-version@
+## Author: Ludius of Caelestrasz-US
+## Notes: Great Vault Status keeps track of your weekly activities that unlock rewards in the Great Vault accross all your characters.
+## SavedVariables: GreatVaultStatusDB
+
+embeds.xml
+
+enUS.lua
+
+Core.lua
+Options.lua
+
