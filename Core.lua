@@ -361,7 +361,7 @@ end
 local function ShowHeader(tooltip, marker, headerName)
 	line = tooltip:AddHeader()
 
-	tooltip:SetCell(line, COL_CHARACTER, L["Chaacter"], nil, "LEFT", nil, nil, nil, 50)
+	tooltip:SetCell(line, COL_CHARACTER, L["Character"], nil, "LEFT", nil, nil, nil, 50)
 	tooltip:SetCellTextColor(line, COL_CHARACTER, yellow.r, yellow.g, yellow.b)
 	tooltip:SetCell(line, COL_ITEMLEVEL, L["iLevel"], nil, "RIGHT")
 	tooltip:SetCellTextColor(line, COL_ITEMLEVEL, yellow.r, yellow.g, yellow.b)
