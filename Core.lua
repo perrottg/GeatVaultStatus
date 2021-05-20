@@ -5,10 +5,9 @@ GreatVaultStatus = LibStub("AceAddon-3.0"):NewAddon("GreatVaultStatus", "AceCons
 local textures = {}
 GreatVaultStatus.data = nil
 
-textures.GreatVaultStatus = "Interface\\Addons\\GreatVaultStatus\\media\\icon.blp" --"Interface\\TARGETINGFRAME\\UI-RaidTargetingIcon_1.png"
+textures.GreatVaultStatus = "Interface\\Addons\\GreatVaultStatus\\media\\icon.blp"
 textures.alliance = "|TInterface\\FriendsFrame\\PlusManz-Alliance:18|t"
 textures.horde = "|TInterface\\FriendsFrame\\PlusManz-Horde:18|t"
---textures.gear = "|TInterface\\WorldMap\\Gear_64Grey:18|t"
 textures.tick = "|TInterface\\RAIDFRAME\\ReadyCheck-Ready:16|t"
 textures.reward = "|TInterface\\WorldMap\\Gear_64Grey:16|t"
 --Interface/Challenges/ChallengeModeTab
@@ -36,10 +35,6 @@ local black = { r = 0.0, g = 0.0, b = 0.0 }
 local white = { r = 1.0, g = 1.0, b = 1.0 }
 local epic = { r = 0.63921568627451, g = 0.2078431372549, b = 0.93333333333333 }
 local frame
-
-local MAPID_BROKENISLES = 1007
-local isInitialized = false
-
 
 local COL_CHARACTER = 2
 local COL_ITEMLEVEL = 3
@@ -108,7 +103,6 @@ local function GetTableSize(T)
 end
 
 local function RealmOnClick(cell, realmName)
-	--GreatVaultStatus:Print("Realm click!")
 	GreatVaultStatus.db.global.realms[realmName].collapsed = not GreatVaultStatus.db.global.realms[realmName].collapsed
 	GreatVaultStatus:ShowToolTip()
 end
@@ -191,7 +185,6 @@ end
 
 
 function GreatVaultStatus:GetCharacters()
-	--self:Print("Loading character info...")
 	local realmInfo = self:GetRealmInfo(GetRealmName())
 	local characters = realmInfo.characters or {}
 
@@ -336,8 +329,6 @@ local function ShowCharacter(tooltip, name, info)
 		tooltip:SetCell(line, COL_ITEMLEVEL, string.format("%.1f", info.averageItemLevel), "RIGHT")
 	end
 
-	--tooltip:SetCell(line, COL_ITEMLEVEL, info.averageItemLevel, "RIGHT")
-
 	if activities then 
 		ShowActivities(tooltip, line, COL_RAIDS, activities[Enum.WeeklyRewardChestThresholdType.Raid], lastUpdated, 0, 10)
 		ShowActivities(tooltip, line, COL_MYHTICS, activities[Enum.WeeklyRewardChestThresholdType.MythicPlus], lastUpdated, 10, 10)
@@ -353,8 +344,6 @@ local function ShowCharacter(tooltip, name, info)
 		tooltip:SetCellTextColor(line, COL_CHARACTER, color.r, color.g, color.b)
 	end
 
-	
-	
 	return line
 end
 
@@ -374,9 +363,6 @@ local function ShowHeader(tooltip, marker, headerName)
 
 	tooltip:SetCellScript(line, COL_CHARACTER, "OnMouseUp", HeaderOnClick, COL_CHARACTER)
 	tooltip:SetCellScript(line, COL_ITEMLEVEL, "OnMouseUp", HeaderOnClick, COL_ITEMLEVEL)
-	--tooltip:SetCellScript(line, COL_RAIDS, "OnMouseUp", HeaderOnClick, COL_RAIDS)
-	--tooltip:SetCellScript(line, COL_MYHTICS, "OnMouseUp", HeaderOnClick, COL_MYHTICS)
-	--tooltip:SetCellScript(line, COL_PVP, "OnMouseUp", HeaderOnClick, COL_PVP)
 
 	return line
 end
