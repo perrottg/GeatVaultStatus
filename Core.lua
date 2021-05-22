@@ -333,7 +333,7 @@ local function ShowCurrentReward(activity)
 	subTooltip:SetPoint("TOP", GreatVaultStatus.tooltip, "TOP", 30, 0)
 	subTooltip:SetPoint("RIGHT", GreatVaultStatus.tooltip, "LEFT", -20, 0)
 
-	line = subTooltip:AddLine(L["Current Rewward"])
+	line = subTooltip:AddLine(L["Current Reward"])
 
 	if activity.type == Enum.WeeklyRewardChestThresholdType.Raid then
 		local instance = EJ_GetInstanceInfo(1190)
