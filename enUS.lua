@@ -13,7 +13,7 @@ L["iLevel"] = true
 L["Mythic"] = true
 
 L["Current Rewward"] = true
-L["Item Level %d - (%s)"]
+L["Item Level %d - (%s)"] = true
 L["Reward at Highest Item Level"] = true
 L["Improve to Item Level %d:"] = true
 L["Complete this activity on %s difficulty."] = true
