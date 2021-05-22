@@ -9,6 +9,7 @@ embeds.xml
 
 enUS.lua
 zhTW.lua
+ruRU.lua
 
 Core.lua
 

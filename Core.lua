@@ -203,6 +203,17 @@ local function GetWeeklyQuestResetTime()
 	return reset
 end
 
+local function HideSubTooltip()
+	local subTooltip = GreatVaultStatus.subTooltip
+	if subTooltip then
+		LibQTip:Release(subTooltip)
+		subTooltip = nil
+	end
+	GameTooltip:Hide()
+	GreatVaultStatus.subTooltip = subTooltip
+end
+
+
 local function GetActivity(activityType, index, activities)
 	local activities = activites[activityType]
 	local result
@@ -240,6 +251,9 @@ function SortCharacters(a, b)
 	return result
 end
 
+
+
+
 local function ShowActivities(tooltip, line, columnStart, activities, lastUpdated, leftPadding, rightPadding)
 	local status
 	local column = columnStart
@@ -264,6 +278,7 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 
 			status = GREEN_FONT_COLOR_CODE .. difficulty .. FONT_COLOR_CODE_CLOSE
 
+			
 		else
 			local progess = 0
 
@@ -283,9 +298,125 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 
 		tooltip:SetCell(line, column, status, nil, "CENTER", nil, nil, leftPad, rightPad)
 
+		if activity.progress >= activity.threshold and activityThisWeek then
+
+			tooltip:SetCellScript(line, column, "OnEnter", function(self)
+				local info = activity
+				GreatVaultStatus:ShowSubTooltip(self, info)
+			end)
+
+			tooltip:SetCellScript(line, column, "OnLeave", HideSubTooltip)
+		end
+
+
 		column = column + 1
 	end
 end
+
+local function ShowCurrentReward(activity)
+	local subTooltip = GreatVaultStatus.subTooltip
+	local line
+	local currentDifficulty = DifficultyUtil.GetDifficultyName(activity.level)
+	local upgradeDifficulty = DifficultyUtil.GetDifficultyName(DifficultyUtil.GetNextPrimaryRaidDifficultyID(activity.level)) 
+	local upgradeAvailable = activity.upgradeItemLevel and activity.currentItemLevel ~= activity.upgradeItemLevel
+	local text = {}
+
+	if LibQTip:IsAcquired("GVSsubTooltip") and subTooltip then
+		subTooltip:Clear()
+	else
+		subTooltip = LibQTip:Acquire("GVSsubTooltip", 1, "LEFT")
+		GreatVaultStatus.subTooltip = subTooltip
+	end
+
+	subTooltip:ClearAllPoints()
+	subTooltip:SetClampedToScreen(true)
+	subTooltip:SetPoint("TOP", GreatVaultStatus.tooltip, "TOP", 30, 0)
+	subTooltip:SetPoint("RIGHT", GreatVaultStatus.tooltip, "LEFT", -20, 0)
+
+	line = subTooltip:AddLine(L["Current Rewward"])
+
+	if activity.type == Enum.WeeklyRewardChestThresholdType.Raid then
+		local instance = EJ_GetInstanceInfo(1190)
+
+		text[1] = string.format(L["Item Level %d - (%s)"], activity.currentItemLevel, currentDifficulty)
+		if upgradeAvailable then
+			text[2] = string.format(L["Improve to Item Level %d:"], activity.upgradeItemLevel)
+			text[3] = string.format(L["Complete this activity on %s difficulty."], upgradeDifficulty)
+			text[5] = string.format(L["%s Boss List"], instance)
+		else
+			text[2] = L["Reward at Highest Item Level"]
+
+		end
+	elseif activity.type == Enum.WeeklyRewardChestThresholdType.MythicPlus then		
+		local hasSeasonData, nextMythicPlusLevel, itemLevel = C_WeeklyRewards.GetNextMythicPlusIncrease(activity.level)
+
+		text[1] = string.format(L["Item Level %d - Mythic (%d)"], activity.currentItemLevel, activity.level)
+
+		if upgradeAvailable then
+			text[2] = string.format(L["Improve to Item Level %d:"], activity.upgradeItemLevel)
+			text[3] = string.format(L["Complete Mythic Level %d dungeons."], nextMythicPlusLevel)		
+			text[4] = string.format(L["The reward is based on the lowest level of your top %d runs."], activity.threshold)
+			text[5] = string.format(L["Top %d Runs This Week"], activity.threshold)
+		else
+			text[2] = L["Reward at Highest Item Level"]
+		end
+	end
+
+	if text[1] then
+		line = subTooltip:AddLine(YELLOW_FONT_COLOR_CODE..text[1]..FONT_COLOR_CODE_CLOSE)
+		line = subTooltip:AddLine(" ")
+	end
+	
+	if text[2] then
+		line = subTooltip:AddLine(GREEN_FONT_COLOR_CODE..text[2]..FONT_COLOR_CODE_CLOSE)
+	end
+
+	if upgradeAvailable then
+		if text[3] then
+			line = subTooltip:AddLine(text[3])
+		end
+		if text[4] then
+			line = subTooltip:AddLine(text[4])
+		end
+
+		if text[5] then
+			line = subTooltip:AddLine(" ")
+			line = subTooltip:AddLine(text[5])
+		end
+	
+		if activity.encounters then
+			local encounters = activity.encounters
+
+			for _, encounter in pairs(encounters) do
+				local detailText = nil
+
+				if activity.type == Enum.WeeklyRewardChestThresholdType.Raid then
+					local boss = EJ_GetEncounterInfo(encounter.encounterID)
+
+					if encounter.bestDifficulty and encounter.bestDifficulty > 0 then
+						detailText = string.format("- %s (%s)", boss, DifficultyUtil.GetDifficultyName(encounter.bestDifficulty))
+						subTooltip:AddLine(GREEN_FONT_COLOR_CODE..detailText..FONT_COLOR_CODE_CLOSE)
+					else
+						detailText = string.format("- %s", boss)
+						subTooltip:AddLine(GRAY_FONT_COLOR_CODE..detailText..FONT_COLOR_CODE_CLOSE)
+					end
+				elseif activity.type == Enum.WeeklyRewardChestThresholdType.MythicPlus then
+					local instance = EJ_GetInstanceInfo(encounter.instanceID)
+				
+					detailText = string.format("&d - %s", encounter.bestDifficulty, instance)
+					subTooltip:AddLine(detailText)
+				end
+			end
+		end
+	end
+	
+	subTooltip:Show()
+end
+
+function GreatVaultStatus:ShowSubTooltip(cell, info)
+	ShowCurrentReward(info)
+end
+
 
 local function HasCompletedActivities(status)
 	local completed = status and status.hasAvailableRewards
@@ -462,6 +593,20 @@ local function GetActivities(activityType)
 	local activities = C_WeeklyRewards.GetActivities(activityType)
 
 	table.sort(activities, function(a,b) return a.index < b.index end)
+
+	for _,activity in pairs(activities) do
+		if activity.progress >= activity.threshold then			
+			local encounterInfo = C_WeeklyRewards.GetActivityEncounterInfo(activityType, activity.index)
+			local currentLink, upgradeLink = C_WeeklyRewards.GetExampleRewardItemHyperlinks(activity.id)
+
+			if encounterInfo then
+				activity.encounters = encounterInfo
+			end
+
+			activity.currentItemLevel = GetDetailedItemLevelInfo(currentLink)
+			activity.upgradeItemLevel = GetDetailedItemLevelInfo(upgradeLink)			
+		end
+	end
 
 	return activities
 end
