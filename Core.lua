@@ -267,9 +267,8 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 		local difficulty
 
 		if activity.progress >= activity.threshold and activityThisWeek then
-
 			if activity.type == Enum.WeeklyRewardChestThresholdType.MythicPlus then
-				difficulty = "Mythic " .. activity.level
+				difficulty = L["Mythic"].." " .. activity.level
 			elseif activity.type == Enum.WeeklyRewardChestThresholdType.RankedPvP then
 				difficulty = PVPUtil.GetTierName(activity.level)
 			elseif activity.type == Enum.WeeklyRewardChestThresholdType.Raid then
@@ -280,7 +279,7 @@ local function ShowActivities(tooltip, line, columnStart, activities, lastUpdate
 
 			
 		else
-			local progess = 0
+			local progress = 0
 
 			if activityThisWeek then
 				progress = activity.progress
@@ -664,7 +663,9 @@ local function GetActivities(activityType)
 			end
 
 			activity.currentItemLevel = GetDetailedItemLevelInfo(currentLink);
-			activity.upgradeItemLevel = GetDetailedItemLevelInfo(upgradeLink);			
+			if upgradeLink then
+				activity.upgradeItemLevel = GetDetailedItemLevelInfo(upgradeLink);			
+			end
 		end
 	end
 
@@ -680,7 +681,7 @@ local function UpdateStatusForCharacter(currentStatus)
     status.activities[Enum.WeeklyRewardChestThresholdType.MythicPlus] = GetActivities(Enum.WeeklyRewardChestThresholdType.MythicPlus)
     status.activities[Enum.WeeklyRewardChestThresholdType.RankedPvP] = GetActivities(Enum.WeeklyRewardChestThresholdType.RankedPvP)
     status.activities[Enum.WeeklyRewardChestThresholdType.Raid] = GetActivities(Enum.WeeklyRewardChestThresholdType.Raid)
-	status.hasAvailableRewards = C_WeeklyRewards.HasAvailableRewards()
+	status.hasAvailableRewards = C_WeeklyRewards.HasAvailableRewards();
 
 	return status
 end
@@ -727,15 +728,19 @@ function GreatVaultStatus:PLAYER_ENTERING_WORLD(event, isLogin, isReload)
 end
 
 function GreatVaultStatus:WEEKLY_REWARDS_UPDATE(event)
+	--self:Print(event)
 	self:SaveCharacterInfo()
 end
 
 function GreatVaultStatus:WEEKLY_REWARDS_ITEM_CHANGED(event)
+	--self:Print(event)
 	self:SaveCharacterInfo()
 end
 
 function GreatVaultStatus:WEEKLY_REWARDS_HIDE(event)
+	--self:Print(event)
 	self:SaveCharacterInfo()
+	self:ScheduleTimer(UpdateStatus, 30)
 end
 
 function GreatVaultStatus:OnEnable()
