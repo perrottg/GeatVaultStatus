@@ -367,7 +367,7 @@ local function ShowPreviewRaidReward(tooltip, activity)
 end
 
 local function ShowPreviewMythicReward(tooltip, activity)
-	local itemLevel = activity.itemLevel or activity.currentItemLevel
+	local itemLevel = activity.currentItemLevel
 	local upgradeItemLevel = activity.upgradeItemLevel
 
 	tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_ITEM_LEVEL_MYTHIC, itemLevel, activity.level)..FONT_COLOR_CODE_CLOSE)
@@ -408,7 +408,7 @@ local function ShowPreviewMythicReward(tooltip, activity)
 end
 
 local function ShowPeviewPvPReward(tooltip, activity)
-	local itemLevel = activity.itemLevel or activity.currentItemLevel
+	local itemLevel = activity.currentItemLevel
 	local upgradeItemLevel = activity.upgradeItemLevel
 	local tierName = PVPUtil.GetTierName(activity.level);
 
@@ -600,6 +600,8 @@ end
 function GreatVaultStatus:ShowToolTip()
 	local tooltip = GreatVaultStatus.tooltip
 	local columns = 13	
+
+	self:SaveCharacterInfo()
 
 	if showSingleRealm then
 		columns = 12
