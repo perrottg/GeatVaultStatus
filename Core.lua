@@ -361,7 +361,8 @@ local function ShowPreviewRaidReward(tooltip, activity)
 
 			end
 		end
-
+	else
+		tooltip:AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE)
 	end
 
 end
@@ -372,7 +373,7 @@ local function ShowPreviewMythicReward(tooltip, activity)
 
 	tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_ITEM_LEVEL_MYTHIC, itemLevel, activity.level)..FONT_COLOR_CODE_CLOSE)
 	tooltip:AddLine(" ")
-
+	
 	if upgradeItemLevel then
 		tooltip:AddLine(GREEN_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_IMPROVE_ITEM_LEVEL, upgradeItemLevel)..FONT_COLOR_CODE_CLOSE)
 		if activity.threshold == 1 then
@@ -403,8 +404,9 @@ local function ShowPreviewMythicReward(tooltip, activity)
 				end
 			end
 		end
+	else
+		tooltip:AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE)
 	end
-
 end
 
 local function ShowPeviewPvPReward(tooltip, activity)
@@ -430,6 +432,8 @@ local function ShowPeviewPvPReward(tooltip, activity)
 				tooltip:AddLine(string.format(WEEKLY_REWARDS_COMPLETE_PVP, ascendTierName, tierInfo.ascendRating, ascendTierInfo.ascendRating - 1))
 			end
 		end
+	else
+		tooltip:AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE)
 	end
 end
 
@@ -460,13 +464,8 @@ local function ShowCurrentReward(activity)
 			ShowPreviewMythicReward(tooltip, activity)
 		elseif activity.type == Enum.WeeklyRewardChestThresholdType.RankedPvP then
 			ShowPeviewPvPReward(tooltip,activity)
-		end
-
-		if not upgradeItemLevel then
-			tooltip.AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE);
-		end
+		end		
 	end
-	
 	tooltip:Show()
 end
 
