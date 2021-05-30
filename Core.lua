@@ -438,10 +438,10 @@ local function ShowCurrentReward(activity)
 	local itemLevel = activity.currentItemLevel
 	local upgradeItemLevel = activity.upgradeItemLevel
 
-	if LibQTip:IsAcquired("GVSsubTooltip") and subTooltip then
+	if LibQTip:IsAcquired("GreatVaultStatusSubTooltip") and tooltip then
 		tooltip:Clear()
 	else
-		tooltip = LibQTip:Acquire("GVSsubTooltip", 1, "LEFT")
+		tooltip = LibQTip:Acquire("GreatVaultStatusSubTooltip", 1, "LEFT")
 		GreatVaultStatus.subTooltip = tooltip
 	end
 
