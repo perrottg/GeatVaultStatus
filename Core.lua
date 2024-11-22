@@ -450,43 +450,28 @@ end
 
 local function ShowPreviewWorldReward(tooltip, activity)
 	local itemLevel = activity.currentItemLevel
-	local upgradeItemLevel = activity.upgradeItemLevel
 
-	if not itemLevel then -- no reward yet, no upgrade
+	if activity.progress < activity.threshold then -- no reward yet, no upgrade
 		if activity.index == 1 then 
-			-- GREAT_VAULT_REWARDS_WORLD_INCOMPLETE -- "GREAT_VAULT_REWARDS_WORLD_INCOMPLETE - Complete %1$d more |4delve:delves; or |4world activity:world activities; this week to unlock a Great Vault reward"
 			tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(GREAT_VAULT_REWARDS_WORLD_INCOMPLETE, activity.threshold - activity.progress)..FONT_COLOR_CODE_CLOSE)
 		elseif activity.index == 2 then 
-			-- GREAT_VAULT_REWARDS_WORLD_COMPLETED_FIRST - Complete %1$d more |4delve:delves; or |4world activity:world activities; this week to unlock a second Great Vault reward
 			tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(GREAT_VAULT_REWARDS_WORLD_COMPLETED_FIRST, activity.threshold - activity.progress)..FONT_COLOR_CODE_CLOSE)
 		elseif activity.index == 3 then 
-			-- GREAT_VAULT_REWARDS_WORLD_COMPLETED_SECOND - Complete %1$d more |4delve:delves; or |4world activity:world activities; this week to unlock a third Great Vault reward. World activities count as Tier 0.1
 			tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(GREAT_VAULT_REWARDS_WORLD_COMPLETED_SECOND, activity.threshold - activity.progress)..FONT_COLOR_CODE_CLOSE)
 		end
+	elseif not itemLevel then
+		-- for some reason we may not have an item level
+		tooltip:AddLine(RED_FONT_COLOR_CODE..RETRIEVING_ITEM_INFO..FONT_COLOR_CODE_CLOSE)
 	else
-		-- WEEKLY_REWARDS_ITEM_LEVEL_WORLD = "Item Level %1$d - (Tier %2$d)"
 		tooltip:AddLine(YELLOW_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_ITEM_LEVEL_WORLD, itemLevel, activity.level)..FONT_COLOR_CODE_CLOSE)
 		tooltip:AddLine(" ")
 
-		-- WEEKLY_REWARDS_IMPROVE_ITEM_LEVEL = "Improve to Item Level %d:"
-		-- tooltip:AddLine(GREEN_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_IMPROVE_ITEM_LEVEL, upgradeItemLevel)..FONT_COLOR_CODE_CLOSE)
+		local _, _, nextLevel, upgradeItemLevel = C_WeeklyRewards.GetNextActivitiesIncrease(activity.activityTierID, activity.level)
 
-		-- WEEKLY_REWARDS_COMPLETE_WORLD = "Complete a Tier %1$d delve or higher to increase this reward's item level."
-		-- tooltip:AddLine(string.format(WEEKLY_REWARDS_COMPLETE_WORLD, ascendTierName, tierInfo.ascendRating, ascendTierInfo.ascendRating - 1))
-
-		local tierID = C_PvP.GetPvpTierID(activity.level, CONQUEST_BRACKET_INDEXES[1]);
-		local tierInfo = C_PvP.GetPvpTierInfo(tierID);
-		local ascendTierInfo = C_PvP.GetPvpTierInfo(tierInfo.ascendTier);
-		if ascendTierInfo then
-
-			local ascendTierName = PVPUtil.GetTierName(ascendTierInfo.pvpTierEnum);
-
-			if ascendTierInfo.ascendRating == 0 then
-				tooltip:AddLine(string.format(WEEKLY_REWARDS_COMPLETE_PVP_MAX, ascendTierName, tierInfo.ascendRating))
-			else
-				-- WEEKLY_REWARDS_COMPLETE_WORLD = "Complete a Tier %1$d delve or higher to increase this reward's item level."
-				tooltip:AddLine(string.format(WEEKLY_REWARDS_COMPLETE_WORLD, ascendTierName, tierInfo.ascendRating, ascendTierInfo.ascendRating - 1))
-			end
+		if upgradeItemLevel then
+			tooltip:AddLine(GREEN_FONT_COLOR_CODE..string.format(WEEKLY_REWARDS_IMPROVE_ITEM_LEVEL, upgradeItemLevel)..FONT_COLOR_CODE_CLOSE)
+			
+			tooltip:AddLine(string.format(WEEKLY_REWARDS_COMPLETE_WORLD, nextLevel))
 		end
 	end
 end
@@ -509,10 +494,8 @@ local function ShowCurrentReward(activity)
 	tooltip:SetPoint("RIGHT", GreatVaultStatus.tooltip, "LEFT", -20, 0)
 	
 	if activity.progress < activity.threshold then
-		-- WEEKLY_REWARDS_UNLOCK_REWARD = "Unlock Reward" // TODO: (?)
 		tooltip:AddLine(WEEKLY_REWARDS_UNLOCK_REWARD) 
 	else
-		-- WEEKLY_REWARDS_CURRENT_REWARD = "Current Reward"
 		tooltip:AddLine(WEEKLY_REWARDS_CURRENT_REWARD) 
 	end
 
@@ -524,7 +507,7 @@ local function ShowCurrentReward(activity)
 		ShowPreviewWorldReward(tooltip, activity)
 	end
 
-	if itemlevel and not upgradeItemLevel then
+	if itemLevel and not upgradeItemLevel then
 		-- WEEKLY_REWARDS_MAXED_REWARD = "Reward at Highest Item Level"
 		tooltip.AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE);
 	end
@@ -723,9 +706,12 @@ local function GetActivities(activityType)
 				activity.encounters = encounterInfo
 			end
 
-			activity.currentItemLevel = GetDetailedItemLevelInfo(currentLink);
+			if currentLink then
+				activity.currentItemLevel = C_Item.GetDetailedItemLevelInfo(currentLink);
+			end
+
 			if upgradeLink then
-				activity.upgradeItemLevel = GetDetailedItemLevelInfo(upgradeLink);			
+				activity.upgradeItemLevel = C_Item.GetDetailedItemLevelInfo(upgradeLink);
 			end
 		end
 	end
