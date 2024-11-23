@@ -509,7 +509,7 @@ local function ShowCurrentReward(activity)
 
 	if itemLevel and not upgradeItemLevel then
 		-- WEEKLY_REWARDS_MAXED_REWARD = "Reward at Highest Item Level"
-		tooltip.AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE);
+		tooltip:AddLine(GREEN_FONT_COLOR_CODE..WEEKLY_REWARDS_MAXED_REWARD..FONT_COLOR_CODE_CLOSE)
 	end
 	
 	tooltip:Show()
