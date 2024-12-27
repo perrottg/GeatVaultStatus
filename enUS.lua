@@ -11,5 +11,7 @@ L["Mythic Dungeons"] = true
 L["PvP"] = true
 L["iLevel"] = true
 L["Mythic"] = true
+L["Dungeons"] = true
+L["World"] = true
 L["Boss List"] = true
 

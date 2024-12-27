@@ -1,6 +1,6 @@
-## Interface: 90005
+## Interface: 110700
 ## Title: Great Vault Status
-## Version: @project-version@
+## Version: v1.1.5
 ## Author: Ludius of Caelestrasz-US
 ## Notes: Great Vault Status displays the weekly Great Vault rewards earned and unearned across all your eligible characters.
 ## Notes-zhTW: Great Vault Status顯示每週的寶庫獎勵，並顯示您所有符合條件角色上的進度。
